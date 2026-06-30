@@ -2707,23 +2707,15 @@ if(!FIREBASE_ENABLED){
 <script>
 (function(){
 
-// ── Service Worker (inline blob) ──────────────────────────────
-const swCode = `
-const CACHE = 'fb-cargo-v4';
-self.addEventListener('install', e => {
-  self.skipWaiting();
-});
-self.addEventListener('activate', e => {
-  self.clients.claim();
-});
-self.addEventListener('fetch', e => {
-  e.respondWith(fetch(e.request).catch(() => new Response('Offline')));
-});
-`;
+// ── Service Worker (registers external sw.js for real offline caching) ──
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    './sw.js'
-      .then(()=>console.log('SW OK'))
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg=>{
+        console.log('SW OK', reg.scope);
+        // Force update check
+        reg.update();
+      })
       .catch(e=>console.log('SW err',e));
   });
 }
